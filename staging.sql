@@ -91,6 +91,7 @@ WHILE @StartDate <= @EndDate
 --This statement creates staging fact table stage_f_sales with attributes and assigned primary key as sales_id
 CREATE TABLE staging.stage_f_sales
 (
+    sales_id             INT      NOT NULL IDENTITY,
     customer_id          INT      NULL,
     product_id           INT      NULL,
     date_id              INT      NULL,
@@ -99,7 +100,7 @@ CREATE TABLE staging.stage_f_sales
     business_order_date  DATETIME NULL,
     quantity             INT      NULL,
     line_total           FLOAT    NULL,
-    PRIMARY KEY (customer_id, product_id, date_id)
+    PRIMARY KEY (sales_id)
 );
 
 --This statement inserts attribute values into staging fact table stage_f_sales
