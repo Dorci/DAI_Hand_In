@@ -10,7 +10,7 @@ CREATE TABLE staging.stage_dim_customer
     first_name            varchar(50),
     middle_name           varchar(50),
     last_name             varchar(50),
-    PRIMARY KEY (customer_id)
+    PRIMARY KEY (dimension_customer_id)
 );
 --This statement creates staging dimension table stage_dim_product with attributes and assigned primary key as dimension_product_id
 CREATE TABLE staging.stage_dim_product
@@ -23,7 +23,7 @@ CREATE TABLE staging.stage_dim_product
 --This statement creates staging dimension table stage_dim_date with attributes and assigned primary key as dimension_date_id
 CREATE TABLE staging.stage_dim_date
 (
-    dimension_date_id INT  NOT NULL IDENTITY,
+    dimension_date_id INT      NOT NULL IDENTITY,
     month_name        varchar(10),
     day_name          varchar(10),
     date              DATETIME NOT NULL,
@@ -53,7 +53,6 @@ SET middle_name='N/A'
 WHERE middle_name IS NULL;
 
 
-
 -- _______________________ PRODUCT _______________________
 
 --This statement inserts attribute values into staging dimension table stage_dim_product
@@ -67,23 +66,23 @@ SET name='N/A'
 WHERE name IS NULL;
 
 
-
 -- _______________________ DATE _______________________
 
 --This statement inserts attribute values unto staging dimension table stage_dim_date
-INSERT INTO staging.stage_dim_date(date)
-SELECT distinct OrderDate
-from AdventureWorks2017.Sales.SalesOrderHeader;
+DECLARE @StartDate DATETIME = '2011-05-31'
+DECLARE @EndDate DATETIME = '2014-06-30'
 
---This statement extracts the date name and assigns it to the day_name attribute in stage_dim_date table when the value is null 
-UPDATE staging.stage_dim_date
-SET day_name = DATENAME(weekday, date)
-WHERE day_name IS NULL;
+WHILE @StartDate <= @EndDate
+    BEGIN
+        INSERT INTO staging.stage_dim_date (date,
+                                            day_name,
+                                            month_name)
+        SELECT @StartDate,
+               DATENAME(weekday, @StartDate),
+               DATENAME(month, @StartDate)
 
---This statement extracts the month name and assigns it to the month_name attribute in stage_dim_date table when the value is null 
-UPDATE staging.stage_dim_date
-SET month_name = DATENAME(month, date)
-WHERE month_name IS NULL;
+        SET @StartDate = DATEADD(dd, 1, @StartDate)
+    END
 
 -- **********************************************************
 -- ************ INSERTING DATA INTO FACT TABLES ************
@@ -92,7 +91,6 @@ WHERE month_name IS NULL;
 --This statement creates staging fact table stage_f_sales with attributes and assigned primary key as sales_id
 CREATE TABLE staging.stage_f_sales
 (
-    sales_id             INT      NOT NULL IDENTITY,
     customer_id          INT      NULL,
     product_id           INT      NULL,
     date_id              INT      NULL,
@@ -101,7 +99,7 @@ CREATE TABLE staging.stage_f_sales
     business_order_date  DATETIME NULL,
     quantity             INT      NULL,
     line_total           FLOAT    NULL,
-    PRIMARY KEY (sales_id)
+    PRIMARY KEY (customer_id, product_id, date_id)
 );
 
 --This statement inserts attribute values into staging fact table stage_f_sales
@@ -113,14 +111,23 @@ INSERT INTO staging.stage_f_sales(business_customer_id, business_product_id, bus
               JOIN AdventureWorks2017.Production.Product P on SOD.ProductID = P.ProductID
      WHERE OnlineOrderFlag = 1);
 
---This statement extracts the customer_id from staging dimesnsion table stage_dim_customer and assigns it to the customer_id attribute in stage_f_sales table when the value is null 
+--This statement extracts the customer_id from staging dimension table stage_dim_customer and assigns it to the customer_id attribute in stage_f_sales table when the value is null
 UPDATE staging.stage_f_sales
-SET customer_id = (SELECT dimension_customer_id FROM staging.stage_dim_customer AS dim_C_id WHERE dim_C_id.customer_id = business_customer_id) WHERE customer_id IS NULL;
+SET customer_id = (SELECT dimension_customer_id
+                   FROM staging.stage_dim_customer AS dim_C_id
+                   WHERE dim_C_id.customer_id = business_customer_id)
+WHERE customer_id IS NULL;
 
---This statement extracts the product_id from staging dimesnsion table stage_dim_product and assigns it to the product_id attribute in stage_f_sales table when the value is null 
+--This statement extracts the product_id from staging dimension table stage_dim_product and assigns it to the product_id attribute in stage_f_sales table when the value is null
 UPDATE staging.stage_f_sales
-SET product_id = (SELECT dimension_product_id FROM staging.stage_dim_product AS dim_P_id WHERE dim_P_id.product_id = business_product_id) WHERE product_id IS NULL;
+SET product_id = (SELECT dimension_product_id
+                  FROM staging.stage_dim_product AS dim_P_id
+                  WHERE dim_P_id.product_id = business_product_id)
+WHERE product_id IS NULL;
 
---This statement extracts the date_id from staging dimesnsion table stage_dim_date and assigns it to the date_id attribute in stage_f_sales table when the value is null 
+--This statement extracts the date_id from staging dimension table stage_dim_date and assigns it to the date_id attribute in stage_f_sales table when the value is null
 UPDATE staging.stage_f_sales
-SET date_id = (SELECT dimension_date_id FROM staging.stage_dim_date AS dim_D_id WHERE dim_D_id.date = business_order_date) WHERE date_id IS NULL;
+SET date_id = (SELECT dimension_date_id
+               FROM staging.stage_dim_date AS dim_D_id
+               WHERE dim_D_id.date = business_order_date)
+WHERE date_id IS NULL;
