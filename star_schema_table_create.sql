@@ -38,7 +38,7 @@ CREATE TABLE star_schema.f_sales
     product_id  INT  NOT NULL,
     date_id     INT  NOT NULL,
     quantity    INT  NOT NULL,
-    line_total  real NOT NULL,
+    line_total  INT NOT NULL,
     PRIMARY KEY (sales_id),
     FOREIGN KEY (customer_id) REFERENCES star_schema.d_customer (dimension_customer_id),
     FOREIGN KEY (product_id) REFERENCES star_schema.d_product (dimension_product_id),

@@ -2,6 +2,7 @@
 -- ************************************* FACT TABLE UPDATE ***************************************
 -- ***********************************************************************************************
 
+DECLARE @LAST_UPDATE as DATETIME = (SELECT lastUpdate FROM StagingDatabase.staging.LastUpdate);
 -- Create temporary table for f_sales.
 CREATE TABLE StagingDatabase.staging.temp_f_sales
 (
@@ -26,11 +27,11 @@ INSERT INTO StagingDatabase.staging.stage_f_sales
               JOIN AdventureWorks2017.Sales.Customer C on SOH.CustomerID = C.CustomerID
               JOIN AdventureWorks2017.Production.Product P on SOD.ProductID = P.ProductID
      WHERE OnlineOrderFlag = 1
-       AND OrderDate > (SELECT lastUpdate FROM StagingDatabase.staging.LastUpdate));
+       AND OrderDate > @LAST_UPDATE);
 
 -- Find corresponding surrogate keys.
 -- ***************************** Customer *****************************
-UPDATE staging.stage_f_sales
+UPDATE StagingDatabase.staging.stage_f_sales
 SET customer_id = (SELECT dimension_customer_id
                    FROM staging.stage_dim_customer AS dim_C_id
                    WHERE dim_C_id.customer_id = business_customer_id
@@ -38,7 +39,7 @@ SET customer_id = (SELECT dimension_customer_id
 WHERE customer_id IS NULL;
 
 -- ***************************** Product *****************************
-UPDATE staging.stage_f_sales
+UPDATE StagingDatabase.staging.stage_f_sales
 SET product_id = (SELECT dimension_product_id
                   FROM staging.stage_dim_product AS dim_P_id
                   WHERE dim_P_id.product_id = business_product_id
@@ -46,7 +47,7 @@ SET product_id = (SELECT dimension_product_id
 WHERE product_id IS NULL;
 
 -- ***************************** Date *****************************
-UPDATE staging.stage_f_sales
+UPDATE StagingDatabase.staging.stage_f_sales
 SET date_id = (SELECT dimension_date_id
                FROM staging.stage_dim_date AS dim_D_id
                WHERE dim_D_id.date = business_order_date)
@@ -55,3 +56,7 @@ WHERE date_id IS NULL;
 -- Insert data into Data Warehouse Fact Sales table
 INSERT INTO AdventureWorks_DW.star_schema.f_sales(sales_id, customer_id, product_id, date_id, quantity, line_total) (SELECT sales_id, customer_id, product_id, date_id, quantity, line_total
                                                                                                                      FROM StagingDatabase.staging.temp_f_sales);
+-- Update last update table with the newest date
+UPDATE StagingDatabase.staging.LastUpdate
+SET lastUpdate = GETDATE()
+WHERE lastUpdate = @LAST_UPDATE;
