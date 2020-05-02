@@ -10,6 +10,8 @@ CREATE TABLE staging.stage_dim_customer
     first_name            varchar(50),
     middle_name           varchar(50),
     last_name             varchar(50),
+    valid_from            DATETIME,
+    valid_to              DATETIME,
     PRIMARY KEY (dimension_customer_id)
 );
 --This statement creates staging dimension table stage_dim_product with attributes and assigned primary key as dimension_product_id
@@ -18,6 +20,8 @@ CREATE TABLE staging.stage_dim_product
     dimension_product_id INT NOT NULL IDENTITY,
     product_id           INT,
     name                 varchar(50),
+    valid_from           DATETIME,
+    valid_to             DATETIME,
     PRIMARY KEY (dimension_product_id)
 );
 --This statement creates staging dimension table stage_dim_date with attributes and assigned primary key as dimension_date_id
@@ -52,18 +56,33 @@ UPDATE staging.stage_dim_customer
 SET middle_name='N/A'
 WHERE middle_name IS NULL;
 
+-- Create new date for valid_from attribute. It will be the date when it was added to data warehouse
+UPDATE staging.stage_dim_customer
+SET valid_from=GETDATE()
+WHERE valid_from IS NULL;
+
+-- This statement replaces all NULL values with date 31.12.9999
+UPDATE staging.stage_dim_customer
+SET valid_to='9999-12-31'
+WHERE valid_to IS NULL;
+
 
 -- _______________________ PRODUCT _______________________
 
 --This statement inserts attribute values into staging dimension table stage_dim_product
-INSERT INTO staging.stage_dim_product(product_id, name)
-SELECT ProductID, Name
+INSERT INTO staging.stage_dim_product(product_id, name, valid_from, valid_to)
+SELECT ProductID, Name, SellStartDate, SellEndDate
 from AdventureWorks2017.Production.Product;
 
 --This statement removes null values in the name attribute in stage_dim_product table by replacing with 'N/A' 
 UPDATE staging.stage_dim_product
 SET name='N/A'
 WHERE name IS NULL;
+
+-- This statement replaces all NULL values with date 31.12.9999
+UPDATE staging.stage_dim_product
+SET valid_to='9999-12-31'
+WHERE valid_to IS NULL;
 
 
 -- _______________________ DATE _______________________

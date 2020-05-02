@@ -2,17 +2,23 @@
 CREATE TABLE star_schema.d_customer
 (
     dimension_customer_id INT         NOT NULL,
-    title                 varchar(10),
+    customer_id           INT         NOT NULL,
+    title                 varchar(10) NOT NULL,
     first_name            varchar(50) NOT NULL,
-    middle_name           varchar(50),
+    middle_name           varchar(50) NOT NULL,
     last_name             varchar(50) NOT NULL,
+    valid_from            DATETIME    NOT NULL,
+    valid_to              DATETIME    NOT NULL,
     PRIMARY KEY (dimension_customer_id)
 );
 --This statement creates dimension table d_product with attributes and primary key is assigned to dimension_product_id
 CREATE TABLE star_schema.d_product
 (
     dimension_product_id INT         NOT NULL,
+    product_id           INT         NOT NULL,
     name                 varchar(50) NOT NULL,
+    valid_from           DATETIME    NOT NULL,
+    valid_to             DATETIME    NOT NULL,
     PRIMARY KEY (dimension_product_id)
 );
 --This statement creates dimension table d_date with attributes and primary key is assigned to dimension_date_id
@@ -39,11 +45,13 @@ CREATE TABLE star_schema.f_sales
     FOREIGN KEY (date_id) REFERENCES star_schema.d_date (dimension_date_id)
 );
 --This statement inserts attribute vales into dimension d_product table
-INSERT INTO star_schema.d_product(dimension_product_id, name)(SELECT dimension_product_id, name
-                                                              FROM StagingDatabase.staging.stage_dim_product);
+INSERT INTO star_schema.d_product
+SELECT *
+FROM StagingDatabase.staging.stage_dim_product;
 --This statement inserts attribute vales into dimension d_customer table
-INSERT INTO star_schema.d_customer(dimension_customer_id, title, first_name, middle_name, last_name)(SELECT dimension_customer_id, title, first_name, middle_name, last_name
-                                                                                                     FROM StagingDatabase.staging.stage_dim_customer);
+INSERT INTO star_schema.d_customer
+SELECT *
+FROM StagingDatabase.staging.stage_dim_customer;
 --This statement inserts attribute vales into dimension d_date table
 INSERT INTO star_schema.d_date(dimension_date_id, month_name, day_name, date)(SELECT * FROM StagingDatabase.staging.stage_dim_date);
 --This statement inserts attribute vales into fact f_sales table
