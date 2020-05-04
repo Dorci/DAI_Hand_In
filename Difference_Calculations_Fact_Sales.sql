@@ -33,7 +33,7 @@ INSERT INTO StagingDatabase.staging.stage_f_sales
 -- ***************************** Customer *****************************
 UPDATE StagingDatabase.staging.stage_f_sales
 SET customer_id = (SELECT dimension_customer_id
-                   FROM staging.stage_dim_customer AS dim_C_id
+                   FROM StagingDatabase.staging.stage_dim_customer AS dim_C_id
                    WHERE dim_C_id.customer_id = business_customer_id
                      AND valid_to = '9999-12-31')
 WHERE customer_id IS NULL;
@@ -41,7 +41,7 @@ WHERE customer_id IS NULL;
 -- ***************************** Product *****************************
 UPDATE StagingDatabase.staging.stage_f_sales
 SET product_id = (SELECT dimension_product_id
-                  FROM staging.stage_dim_product AS dim_P_id
+                  FROM  StagingDatabase.staging.stage_dim_product AS dim_P_id
                   WHERE dim_P_id.product_id = business_product_id
                     AND valid_to = '9999-12-31')
 WHERE product_id IS NULL;
@@ -49,7 +49,7 @@ WHERE product_id IS NULL;
 -- ***************************** Date *****************************
 UPDATE StagingDatabase.staging.stage_f_sales
 SET date_id = (SELECT dimension_date_id
-               FROM staging.stage_dim_date AS dim_D_id
+               FROM  StagingDatabase.staging.stage_dim_date AS dim_D_id
                WHERE dim_D_id.date = business_order_date)
 WHERE date_id IS NULL;
 
