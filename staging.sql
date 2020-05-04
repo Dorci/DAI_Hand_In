@@ -4,7 +4,6 @@
 --This statement creates staging dimension table stage_dim_customer with attributes and assigned primary key as customer_id
 CREATE TABLE StagingDatabase.staging.stage_dim_customer
 (
-    dimension_customer_id INT NOT NULL IDENTITY,
     customer_id           INT NOT NULL,
     title                 varchar(10),
     first_name            varchar(50),
@@ -12,32 +11,27 @@ CREATE TABLE StagingDatabase.staging.stage_dim_customer
     last_name             varchar(50),
     valid_from            DATETIME,
     valid_to              DATETIME,
-    PRIMARY KEY (dimension_customer_id)
 );
 --This statement creates staging dimension table stage_dim_product with attributes and assigned primary key as dimension_product_id
 CREATE TABLE StagingDatabase.staging.stage_dim_product
 (
-    dimension_product_id INT NOT NULL IDENTITY,
     product_id           INT,
     name                 varchar(50),
     valid_from           DATETIME,
     valid_to             DATETIME,
-    PRIMARY KEY (dimension_product_id)
 );
 --This statement creates staging dimension table stage_dim_date with attributes and assigned primary key as dimension_date_id
 CREATE TABLE StagingDatabase.staging.stage_dim_date
 (
-    dimension_date_id INT      NOT NULL IDENTITY,
     month_name        varchar(10),
     day_name          varchar(10),
     date              DATETIME NOT NULL,
-    PRIMARY KEY (dimension_date_id)
 );
 
 -- Create a table which holds last update variable
 CREATE TABLE StagingDatabase.staging.LastUpdate
 (
-    lastUpdate DATETIME
+    lastUpdate DATETIME DEFAULT GETDATE()
 );
 
 -- **********************************************************
