@@ -67,9 +67,9 @@ WHILE @StartDate <= @EndDate
         SET @StartDate = DATEADD(dd, 1, @StartDate)
     END
 
--- ******************************************************************
--- ************ INSERTING FIXED DATA INTO DATA WAREHOUSE ************
--- ******************************************************************
+-- ***********************************************************************
+-- ************ INSERTING FIXED DATA INTO DW DIMENSION TABLES ************
+-- ***********************************************************************
 
 --This statement inserts attribute vales into dimension d_product table
 INSERT INTO AdventureWorks_DW.star_schema.d_product (product_id, name, valid_from, valid_to)
@@ -88,9 +88,9 @@ SELECT *
 FROM StagingDatabase.staging.stage_dim_date;
 
 
--- **********************************************************
--- ************ INSERTING DATA INTO FACT TABLES ************
--- **********************************************************
+-- ***************************************************************
+-- ************ INSERTING FIXED DATA INTO FACT TABLES ************
+-- ***************************************************************
 
 --This statement inserts attribute values into staging fact table stage_f_sales
 INSERT INTO StagingDatabase.staging.stage_f_sales(business_customer_id, business_product_id, business_order_date,
