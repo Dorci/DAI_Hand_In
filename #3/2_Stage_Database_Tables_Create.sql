@@ -81,3 +81,29 @@ CREATE TABLE StagingDatabase.staging.stage_dim_product_changed
     valid_from           DATETIME,
     valid_to             DATETIME,
 );
+
+-- Create temporary table to store updated customers so we can handle valid_to attribute and
+-- deleting old customers
+CREATE TABLE StagingDatabase.staging.stage_dim_customer_changed
+    (
+    customer_id         INT,
+    title               varchar(10),
+    first_name          varchar(50),
+    middle_name          varchar(50),
+    last_name          varchar(50),
+    valid_from          DATETIME,
+    valid_to         DATETIME,
+
+    );
+-- Create temporary table to store added customers so we can handle valid_to attribute
+CREATE TABLE StagingDatabase.staging.stage_dim_customer_added
+    (
+    customer_id         INT,
+    title               varchar(10),
+    first_name          varchar(50),
+    middle_name          varchar(50),
+    last_name          varchar(50),
+    valid_from          DATETIME,
+    valid_to         DATETIME,
+
+    );
