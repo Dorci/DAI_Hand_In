@@ -71,19 +71,20 @@ WHERE name IS NULL;
 -- _______________________ DATE _______________________
 
 --This statement inserts attribute values unto staging dimension table stage_dim_date
-INSERT INTO staging.stage_dim_date(date)
-SELECT distinct OrderDate
-from AdventureWorks2017.Sales.SalesOrderHeader;
+DECLARE @StartDate DATETIME = '2011-05-31'
+DECLARE @EndDate DATETIME = '2014-06-30'
 
---This statement extracts the date name and assigns it to the day_name attribute in stage_dim_date table when the value is null 
-UPDATE staging.stage_dim_date
-SET day_name = DATENAME(weekday, date)
-WHERE day_name IS NULL;
+WHILE @StartDate <= @EndDate
+    BEGIN
+        INSERT INTO StagingDatabase.staging.stage_dim_date (date,
+                                                            day_name,
+                                                            month_name)
+        SELECT @StartDate,
+               DATENAME(weekday, @StartDate),
+               DATENAME(month, @StartDate)
 
---This statement extracts the month name and assigns it to the month_name attribute in stage_dim_date table when the value is null 
-UPDATE staging.stage_dim_date
-SET month_name = DATENAME(month, date)
-WHERE month_name IS NULL;
+        SET @StartDate = DATEADD(dd, 1, @StartDate)
+    END
 
 -- **********************************************************
 -- ************ INSERTING DATA INTO FACT TABLES ************

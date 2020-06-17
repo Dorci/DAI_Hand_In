@@ -46,13 +46,13 @@ WHERE product_id in (
 
 -- Inserting updated rows into the temporary table to handle changes
 INSERT INTO StagingDatabase.staging.stage_dim_product_changed
-    (product_id, name, valid_from) (SELECT ProductID, Name, SellStartDate
+    (product_id, name) (SELECT ProductID, Name
                                     FROM AdventureWorks2017.Production.Product
                                         EXCEPT
-                                    SELECT product_id, name, valid_from
+                                    SELECT product_id, name
                                     FROM StagingDatabase.staging.stage_dim_product
                                         EXCEPT (
-                                             SELECT ProductID, Name, SellStartDate
+                                             SELECT ProductID, Name
                                              FROM AdventureWorks2017.Production.Product
                                              WHERE productID IN
                                                    (SELECT productID
@@ -67,6 +67,11 @@ UPDATE StagingDatabase.staging.stage_dim_product_changed
 SET valid_to = '9999-12-31'
 WHERE valid_to IS NULL;
 
+-- Update valid_from to today's date
+UPDATE StagingDatabase.staging.stage_dim_product_changed
+SET valid_from = GETDATE()
+WHERE valid_from IS NULL;
+
 -- Alter changed rows in Data Warehouse
 UPDATE AdventureWorks_DW.star_schema.d_product
 SET valid_to = DATEADD(dd, -1, GETDATE())
@@ -76,3 +81,6 @@ WHERE product_id in (SELECT product_id FROM StagingDatabase.staging.stage_dim_pr
 INSERT INTO AdventureWorks_DW.star_schema.d_product
 SELECT *
 FROM StagingDatabase.staging.stage_dim_product_changed;
+
+-- Delete data in temporary table
+DELETE FROM StagingDatabase.staging.stage_dim_product_changed;

@@ -37,6 +37,9 @@ CREATE TABLE StagingDatabase.staging.LastUpdate
     lastUpdate DATETIME DEFAULT GETDATE()
 );
 
+-- Inset value into LastUpdate table
+INSERT INTO StagingDatabase.staging.LastUpdate(lastUpdate) VALUES (GETDATE());
+
 --This statement creates staging fact table stage_f_sales with attributes and assigned primary key as sales_id
 CREATE TABLE StagingDatabase.staging.stage_f_sales
 (
